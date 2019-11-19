@@ -4,7 +4,7 @@
 % Brian Northan 2019 - Contributors
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+clear all
 %% Simulation parameters
 max_photons = 100;
 num_iter = 100;
@@ -14,10 +14,17 @@ n = 512;
 lambda = 510;
 numerical_aperture = 1.4;
 background_level = 0;
-left_bg = 0;
-mid_bg = 0.05;
-right_bg = 0.25;
 
+background = true;
+if background
+    left_bg = 0;
+    mid_bg = 0.05;
+    right_bg = 0.25;
+else
+    left_bg = 0;
+    mid_bg = 0;
+    right_bg = 0;
+end
 SAVE_DISPLAY = 1;
 USE_GPU = 0;
 
@@ -87,12 +94,12 @@ end
 figure(2)
 display_array_wnr = [ field_wnr{1}, field_wnr{2}, field_wnr{3}; field_wnr{4}, field_wnr{5}, field_wnr{6}];
 imshow(display_array_wnr);
-title('deconv wnr NSR=.1 to .000001');
+title('deconv wnr NSR=1 to .00001');
 
 figure(3)
 display_array_spectrum_wnr = [ spectrum_wnr{1}, spectrum_wnr{2}, spectrum_wnr{3}; spectrum_wnr{4}, spectrum_wnr{5}, spectrum_wnr{6}];
 imshow(display_array_spectrum_wnr);
-title('specturm wnr NSR=.1 to .000001');
+title('specturm wnr NSR=1 to .00001');
 
 ssimval_rl
 ssimval_wnr
