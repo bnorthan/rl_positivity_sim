@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simple demonstration of the effect of positivity in RL deconvolution %
-% James Manton, 2019                                                   %
+% James Manton, 2019 - Founder and License Holder
+% Brian Northan 2019 - Contributors
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -14,8 +15,8 @@ lambda = 510;
 numerical_aperture = 1.4;
 background_level = 0;
 left_bg = 0;
-mid_bg = 0.05;
-right_bg = 0.25;
+mid_bg = 0;%0.05;
+right_bg = 0;%0.25;
 
 SAVE_DISPLAY = 1;
 USE_GPU = 0;
@@ -55,6 +56,7 @@ else
 end
 field_rl = field_rl ./ max(field_rl(:));
 
+ssimval_rl=ssim(field, field_rl);
 
 %% Calculate spectra
 spectrum_field = log(1 + abs(fftshift(fft2(field))));
@@ -72,3 +74,25 @@ imshow(display_array, [])
 if SAVE_DISPLAY
    imwrite(display_array, 'rl_positivity_sim.png')
 end
+
+for i=1:6
+    rf = 1/(10^(i-1))
+    field_wnr{i} = deconvwnr(field_imaged, fftshift(ifftn(otf)), rf);
+    field_wnr{i}=field_wnr{i}./max(field_wnr{i}(:));
+    spectrum_wnr{i} = log(1 + abs(fftshift(fft2(field_wnr{i}))));
+    spectrum_wnr{i} = spectrum_wnr{i} ./ max(spectrum_wnr{i}(:));
+    ssimval_wnr(i) = ssim(field,field_wnr{i})
+end
+
+figure(2)
+display_array_wnr = [ field_wnr{1}, field_wnr{2}, field_wnr{3}; field_wnr{4}, field_wnr{5}, field_wnr{6}];
+imshow(display_array_wnr);
+title('deconv wnr NSR=.1 to .000001');
+
+figure(3)
+display_array_spectrum_wnr = [ spectrum_wnr{1}, spectrum_wnr{2}, spectrum_wnr{3}; spectrum_wnr{4}, spectrum_wnr{5}, spectrum_wnr{6}];
+imshow(display_array_spectrum_wnr);
+title('specturm wnr NSR=.1 to .000001');
+
+ssimval_rl
+ssimval_wnr
