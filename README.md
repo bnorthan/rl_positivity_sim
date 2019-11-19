@@ -37,7 +37,7 @@ The image above shows results of applying the matlab Wiener implementation ([dec
 
 Below is value of the structural similarity index ([matlab ssim function](https://www.mathworks.com/help/images/ref/ssim.html)) between the deconvolved and original image for several methods.  This was measured with and without background (by setting left_bg,mid_bg, and right_bg to 0).  With background a Wiener Filter with NSR = 0.1 had the highest SSIM.  Without background 100 iterations of Richardson Lucy had the highest SSIM.  
 
-| Method | SSIM no background | SSIM background |
+| Method | SSIM (image has background) | SSIM (without background) |
 |--------|--------------------|---------------- |
 |Richardson Lucy 100 iterations | 0.6265 | 0.9083 |
 |Wiener NSR=1|  0.5599 | 0.6835 |
