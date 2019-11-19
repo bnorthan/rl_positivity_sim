@@ -15,8 +15,8 @@ lambda = 510;
 numerical_aperture = 1.4;
 background_level = 0;
 left_bg = 0;
-mid_bg = 0;%0.05;
-right_bg = 0;%0.25;
+mid_bg = 0.05;
+right_bg = 0.25;
 
 SAVE_DISPLAY = 1;
 USE_GPU = 0;
