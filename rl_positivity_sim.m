@@ -39,24 +39,63 @@ USE_GPU = 0;
 %% Create OTF
 otf = paraxial_otf(n, lambda, numerical_aperture, pixel_size);
 
+% 0 for lines, 1 for points, 2 for circles of varying size, 3 for circles
+% of varying intensity
+sim_type=3;
 
-%% Create line pairs and add background levels
 field = zeros(n);
-field((n/4):(3*n/4), (n/2) - spacing_px) = 1;
-field((n/4):(3*n/4), (n/2) + spacing_px) = 1;
-field = field + circshift(field, [0, round(n/3)]) + circshift(field, [0, -round(n/3)]);
- 
-field(7*n/8 - spacing_px, (n/4):(3*n/4)) = 1;
-field(7*n/8 + spacing_px, (n/4):(3*n/4)) = 1;
- 
-field(n/2 - spacing_px, (n/16):(15*n/16)) = 1;
-field(n/2 + spacing_px, (n/16):(15*n/16)) = 1;
- 
+    
+if (sim_type==0)
+    %% Create line pairs and add background levels
+    field((n/4):(3*n/4), (n/2) - spacing_px) = 1;
+    field((n/4):(3*n/4), (n/2) + spacing_px) = 1;
+    field = field + circshift(field, [0, round(n/3)]) + circshift(field, [0, -round(n/3)]);
+
+    field(7*n/8 - spacing_px, (n/4):(3*n/4)) = 1;
+    field(7*n/8 + spacing_px, (n/4):(3*n/4)) = 1;
+
+    field(n/2 - spacing_px, (n/16):(15*n/16)) = 1;
+    field(n/2 + spacing_px, (n/16):(15*n/16)) = 1;
+
+elseif (sim_type==1)
+    numPairs=10;
+    A=10;
+
+    for i=1:numPairs
+        field((i*floor(n/numPairs))-floor(n/numPairs/2), (n/2) - i) = A;
+        field((i*floor(n/numPairs))-floor(n/numPairs/2), (n/2) + i) = A;
+    end
+
+    field = field + circshift(field, [0, round(n/3)]) + circshift(field, [0, -round(n/3)]);
+elseif (sim_type==2)
+    x = -n/2:n/2-1;
+    y = -n/2:n/2-1;
+    [xx, yy] = meshgrid(x+0.5,y+0.5);
+    
+    numCircles=10;
+    A=100;
+    for i=1:numCircles
+        yc=i*floor(n/numCircles)-floor(n/numCircles/2)-n/2;
+        field((xx.^2+(yy-yc).^2)<(i)^2)=A/(i^2);   % radius 100, center at the origin
+    end
+    field = field + circshift(field, [0, round(n/3)]) + circshift(field, [0, -round(n/3)]);
+elseif (sim_type==3)
+    x = -n/2:n/2-1;
+    y = -n/2:n/2-1;
+    [xx, yy] = meshgrid(x+0.5,y+0.5);
+    
+    numCircles=10;
+   
+    for i=1:numCircles
+        yc=i*floor(n/numCircles)-floor(n/numCircles/2)-n/2;
+        field((xx.^2+(yy-yc).^2)<(i)^2)=2^i;   % radius 100, center at the origin
+    end
+    field = field + circshift(field, [0, round(n/3)]) + circshift(field, [0, -round(n/3)]);
+end
+
 field(:, round(n/3):round(2*n/3)) = field(:, round(n/3):round(2*n/3)) + mid_bg;
 field(:, round(2*n/3):end) = field(:, round(2*n/3):end) + right_bg;
 
-
-%% Simulate captured data
 field_imaged = real(ifft2(fft2(field) .* otf));
 
 if normalize_convolved == true
