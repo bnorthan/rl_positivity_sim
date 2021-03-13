@@ -15,6 +15,10 @@ lambda = 510;
 numerical_aperture = 1.4;
 background_level = 0;
 
+% even if bg is 0 noise will be added to signal
+% so set to 0 for completely noiseless simulation
+add_noise = true;
+
 background = true;
 if background
     left_bg = 0;
@@ -52,8 +56,11 @@ field(:, round(2*n/3):end) = field(:, round(2*n/3):end) + right_bg;
 %% Simulate captured data
 field_imaged = real(ifft2(fft2(field) .* otf));
 field_imaged = field_imaged ./ max(field_imaged(:));
-field_imaged = poissrnd(field_imaged * max_photons + background_level);
 
+% add noise
+if (add_noise==true)
+    field_imaged = poissrnd(field_imaged * max_photons + background_level);
+end
 
 %% Deconvolve data
 if USE_GPU
