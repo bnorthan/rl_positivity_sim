@@ -6,8 +6,11 @@
 
 clear all
 %% Simulation parameters
-max_photons = 100;
-num_iter = 100;
+max_photons = 1000;
+
+% percentage of photons detected 0-1
+photons_detected = 1;
+num_iter = 10000;
 pixel_size = 20;
 spacing_px = 4;
 n = 512;
@@ -84,11 +87,12 @@ elseif (sim_type==3)
     y = -n/2:n/2-1;
     [xx, yy] = meshgrid(x+0.5,y+0.5);
     
+    r=8;
     numCircles=10;
    
     for i=1:numCircles
         yc=i*floor(n/numCircles)-floor(n/numCircles/2)-n/2;
-        field((xx.^2+(yy-yc).^2)<(i)^2)=2^i;   % radius 100, center at the origin
+        field((xx.^2+(yy-yc).^2)<(r)^2)=2^i/max_photons;   % radius 100, center at the origin
     end
     field = field + circshift(field, [0, round(n/3)]) + circshift(field, [0, -round(n/3)]);
 end
@@ -96,6 +100,8 @@ end
 field(:, round(n/3):round(2*n/3)) = field(:, round(n/3):round(2*n/3)) + mid_bg;
 field(:, round(2*n/3):end) = field(:, round(2*n/3):end) + right_bg;
 
+%% Simulate captured data
+field=field*max_photons;
 field_imaged = real(ifft2(fft2(field) .* otf));
 
 if normalize_convolved == true
@@ -104,7 +110,7 @@ end
 
 % add noise
 if (add_noise==true)
-    field_imaged = poissrnd(field_imaged * max_photons + background_level);
+    field_imaged = poissrnd(field_imaged * photons_detected + background_level);
 end
 
 %% Deconvolve data
