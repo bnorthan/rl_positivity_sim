@@ -19,6 +19,9 @@ background_level = 0;
 % so set to 0 for completely noiseless simulation
 add_noise = true;
 
+% add option to turn off normalization of convolved image
+normalize_convolved = false;
+
 background = true;
 if background
     left_bg = 0;
@@ -55,7 +58,10 @@ field(:, round(2*n/3):end) = field(:, round(2*n/3):end) + right_bg;
 
 %% Simulate captured data
 field_imaged = real(ifft2(fft2(field) .* otf));
-field_imaged = field_imaged ./ max(field_imaged(:));
+
+if normalize_convolved == true
+    field_imaged = field_imaged ./ max(field_imaged(:));
+end
 
 % add noise
 if (add_noise==true)
