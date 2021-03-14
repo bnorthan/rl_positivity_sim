@@ -119,6 +119,22 @@ if USE_GPU
 else
     field_rl = richardson_lucy(field_imaged, otf, num_iter, 1);
 end
+
+figure
+hold on
+for i=1:9
+        yc=(i*floor(n/10))-floor(n/10/2)
+        n/2
+        xshift=n/3;
+        subplot(3,3,i);
+        hold on
+        plot(field(yc, n/2-10-xshift:(n/2)+10-xshift), 'r');
+        plot(field_imaged(yc, n/2-10-xshift:(n/2)+10-xshift), 'g');
+        plot(field_rl(yc, n/2-10-xshift:(n/2)+10-xshift), 'b');
+end
+
+legend('field', 'imaged', 'deconvolved');
+
 field_rl = field_rl ./ max(field_rl(:));
 
 ssimval_rl=ssim(field, field_rl);
