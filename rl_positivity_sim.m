@@ -10,7 +10,7 @@ max_photons = 1000;
 
 % percentage of photons detected 0-1
 photons_detected = 1;
-num_iter = 10000;
+num_iter = 1000;
 pixel_size = 20;
 spacing_px = 4;
 n = 512;
@@ -44,7 +44,7 @@ otf = paraxial_otf(n, lambda, numerical_aperture, pixel_size);
 
 % 0 for lines, 1 for points, 2 for circles of varying size, 3 for circles
 % of varying intensity
-sim_type=3;
+sim_type=2;
 
 field = zeros(n);
     
@@ -62,7 +62,7 @@ if (sim_type==0)
 
 elseif (sim_type==1)
     numPairs=10;
-    A=10;
+    A=1;
 
     for i=1:numPairs
         field((i*floor(n/numPairs))-floor(n/numPairs/2), (n/2) - i) = A;
@@ -76,10 +76,10 @@ elseif (sim_type==2)
     [xx, yy] = meshgrid(x+0.5,y+0.5);
     
     numCircles=10;
-    A=100;
+    A=1;
     for i=1:numCircles
         yc=i*floor(n/numCircles)-floor(n/numCircles/2)-n/2;
-        field((xx.^2+(yy-yc).^2)<(i)^2)=A/(i^2);   % radius 100, center at the origin
+        field((xx.^2+(yy-yc).^2)<(i)^2)=A;   % radius 100, center at the origin
     end
     field = field + circshift(field, [0, round(n/3)]) + circshift(field, [0, -round(n/3)]);
 elseif (sim_type==3)
@@ -147,7 +147,7 @@ spectrum_rl = spectrum_rl ./ max(spectrum_rl(:));
 
 
 %% Display (and save) results
-figure(1)
+figure
 display_array = [field ./ max(field(:)), spectrum_field, fftshift(otf); ...
     field_imaged ./ max(field_imaged(:)), field_rl, spectrum_rl];
 imshow(display_array, [])
@@ -165,12 +165,12 @@ for i=1:6
     ssimval_wnr(i) = ssim(field,field_wnr{i})
 end
 
-figure(2)
+figure
 display_array_wnr = [ field_wnr{1}, field_wnr{2}, field_wnr{3}; field_wnr{4}, field_wnr{5}, field_wnr{6}];
 imshow(display_array_wnr);
 title('deconv wnr NSR=1 to .00001');
 
-figure(3)
+figure
 display_array_spectrum_wnr = [ spectrum_wnr{1}, spectrum_wnr{2}, spectrum_wnr{3}; spectrum_wnr{4}, spectrum_wnr{5}, spectrum_wnr{6}];
 imshow(display_array_spectrum_wnr);
 title('specturm wnr NSR=1 to .00001');
