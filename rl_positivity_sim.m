@@ -6,11 +6,10 @@
 
 clear all
 %% Simulation parameters
-max_photons = 10000;
+max_photons = 1000;
 
 % percentage of photons detected 0-1
 photons_detected = 1;
-num_iter = 1000;
 pixel_size = 20;
 spacing_px = 4;
 n = 512;
@@ -18,11 +17,37 @@ lambda = 510;
 numerical_aperture = 1.4;
 background_level = 0;
 
+method=3;
+
+if method==1
+    num_iter=10000
+    experiment_description = 'classic_rl';
+elseif method ==2
+    % matlab deconvlucy is accelerated so use less iterations
+    num_iter=100
+    experiment_description = 'deconvlucy';
+elseif method ==3
+    % matlab deconvblind is accelerated so use less iterations
+    num_iter=100
+    experiment_description = 'deconvblind';
+end
+
 % 0 for lines, 1 for points, 2 for circles of varying size, 3 for circles
 % of varying intensity
 sim_type=1;
-experiment_dir = 'reports/points10000/';
-experiment_description = 'Restore points using 10000 iterations of RL';
+
+if sim_type==0
+    experiment_description = [experiment_description '_lines'];
+elseif sim_type==1
+    experiment_description = [experiment_description '_points'];
+elseif sim_type==2
+    experiment_description = [experiment_description '_circles_varyingsize'];
+elseif sim_type==3
+    experiment_description = [experiment_description '_circles_varyingintensity'];
+end
+
+experiment_description = [experiment_description '_' num2str(num_iter)];
+experiment_dir = ['reports/' experiment_description '/'];
 
 mkdir([experiment_dir]);
 fileID = fopen([experiment_dir 'report.md'],'w');
@@ -144,11 +169,19 @@ if (add_noise==true)
     field_imaged = poissrnd(field_imaged * photons_detected + background_level);
 end
 
-%% Deconvolve data
-if USE_GPU
-    field_rl = gather(richardson_lucy(gpuArray(field_imaged), gpuArray(otf), num_iter, 1));
-else
-    field_rl = richardson_lucy(field_imaged, otf, num_iter, 1);
+if (method==1)
+    %% Deconvolve data
+    if USE_GPU
+        field_rl = gather(richardson_lucy(gpuArray(field_imaged), gpuArray(otf), num_iter, 1));
+    else
+        field_rl = richardson_lucy(field_imaged, otf, num_iter, 1);
+    end
+elseif method==2
+    field_rl = deconvlucy(field_imaged, fftshift(ifftn(otf)), num_iter);
+elseif method==3
+    psf_start = fftshift(ifftn(otf));
+    [field_rl, psf_blind] = deconvblind(field_imaged, psf_start, num_iter);
+    psf_array = [psf_start(n/4:3*n/4,n/4:3*n/4)./max(psf_start(:)) psf_blind(n/4:3*n/4,n/4:3*n/4)./max(psf_blind(:))];
 end
 
 line_plot_fig=figure
@@ -184,7 +217,6 @@ spectrum_field = spectrum_field ./ max(spectrum_field(:));
 spectrum_rl = log(1 + abs(fftshift(fft2(field_rl))));
 spectrum_rl = spectrum_rl ./ max(spectrum_rl(:));
 
-
 %% Display (and save) results
 figure
 display_array = [field ./ max(field(:)), spectrum_field, fftshift(otf); ...
@@ -198,7 +230,18 @@ end
 imwrite(display_array, [experiment_dir 'images.png'])
 fprintf(fileID,'## Images  \n');
 fprintf(fileID,'![](images.png)  \n');
+
+if method==3
+    imwrite(psf_start(n/8:7*n/8,n/8:7*n/8)./max(psf_start(:)), [experiment_dir 'psfstart.png'])
+    imwrite(psf_blind(n/8:7*n/8,n/8:7*n/8)./max(psf_blind(:)), [experiment_dir 'psfblind.png'])
+    fprintf(fileID,'## PSFs  \n');
+    fprintf(fileID,'left starting PSF, right blind PSF  \n');
+    fprintf(fileID,'![](psfstart.png) ![](psfblind.png)  \n');
+end
+
+
 fclose(fileID);
+
 
 for i=1:6
     rf = 1/(10^(i-1))
