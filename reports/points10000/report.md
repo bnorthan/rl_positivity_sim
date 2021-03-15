@@ -1,9 +1,9 @@
 ## Parameters  
-description: Restore points, 10000 iterations of RL  
-max photons 1000  
-num iter 10000  
+description: Restore points using 10000 iterations of RL  
+max photons 10000  
+num iter 1000  
   pixel size 20  
-  spacing px 4  
+  spacing px 4 nm  
   n 512  
 lambda 510  
 numerical aperture 1.400000  
@@ -12,6 +12,7 @@ left background 0.000000
 mid background 0.050000  
 right background 0.250000  
 ## Line Plots (medium noise)  
+points 60, 100, 140, 180, 220, 260, 300, 340, 380, 420 nm apart.  
 red: ground truth  
 green: imaged   
 blue: restored   

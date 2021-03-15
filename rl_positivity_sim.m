@@ -6,7 +6,7 @@
 
 clear all
 %% Simulation parameters
-max_photons = 1000;
+max_photons = 10000;
 
 % percentage of photons detected 0-1
 photons_detected = 1;
@@ -20,9 +20,9 @@ background_level = 0;
 
 % 0 for lines, 1 for points, 2 for circles of varying size, 3 for circles
 % of varying intensity
-sim_type=2;
-experiment_dir = 'reports/circles/';
-experiment_description = 'Restore circles of varying size, 1000 iterations of RL';
+sim_type=1;
+experiment_dir = 'reports/points10000/';
+experiment_description = 'Restore points using 10000 iterations of RL';
 
 mkdir([experiment_dir]);
 fileID = fopen([experiment_dir 'report.md'],'w');
@@ -31,7 +31,7 @@ fprintf(fileID,'description: %s  \n',experiment_description);
 fprintf(fileID,'max photons %d  \n',max_photons);
 fprintf(fileID,'num iter %d  \n  ',num_iter);
 fprintf(fileID,'pixel size %d  \n  ',pixel_size);
-fprintf(fileID,'spacing px %d  \n  ',spacing_px);
+fprintf(fileID,'spacing px %d nm  \n  ',spacing_px);
 fprintf(fileID,'n %d  \n',n);
 fprintf(fileID,'lambda %d  \n',lambda);
 fprintf(fileID,'numerical aperture %f  \n',numerical_aperture);
@@ -93,7 +93,7 @@ elseif (sim_type==1)
         field((i*floor(n/numPairs))-floor(n/numPairs/2), (n/2) + i) = A;
         distance = (2*i+1)*pixel_size;
         if i==numPairs
-            experiment_info=[experiment_info num2str(distance) ' apart.  \n'];
+            experiment_info=[experiment_info num2str(distance) ' nm apart.  \n'];
         else
             experiment_info=[experiment_info num2str(distance) ', '];
         end
