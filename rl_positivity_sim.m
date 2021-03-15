@@ -18,6 +18,27 @@ lambda = 510;
 numerical_aperture = 1.4;
 background_level = 0;
 
+% 0 for lines, 1 for points, 2 for circles of varying size, 3 for circles
+% of varying intensity
+sim_type=2;
+experiment_dir = 'reports/circles/';
+experiment_description = 'Restore circles of varying size, 1000 iterations of RL';
+
+mkdir([experiment_dir]);
+fileID = fopen([experiment_dir 'report.md'],'w');
+fprintf(fileID,'## Parameters  \n');
+fprintf(fileID,'description: %s  \n',experiment_description);
+fprintf(fileID,'max photons %d  \n',max_photons);
+fprintf(fileID,'num iter %d  \n  ',num_iter);
+fprintf(fileID,'pixel size %d  \n  ',pixel_size);
+fprintf(fileID,'spacing px %d  \n  ',spacing_px);
+fprintf(fileID,'n %d  \n',n);
+fprintf(fileID,'lambda %d  \n',lambda);
+fprintf(fileID,'numerical aperture %f  \n',numerical_aperture);
+fprintf(fileID,'background level %d  \n',background_level);
+
+%fprintf(fileID,'%6.2f %12.8f\n',A);
+
 % even if bg is 0 noise will be added to signal
 % so set to 0 for completely noiseless simulation
 add_noise = true;
@@ -35,19 +56,20 @@ else
     mid_bg = 0;
     right_bg = 0;
 end
+
+fprintf(fileID,'left background %f  \n',left_bg);
+fprintf(fileID,'mid background %f  \n',mid_bg);
+fprintf(fileID,'right background %f  \n',right_bg);
+
 SAVE_DISPLAY = 1;
 USE_GPU = 0;
-
 
 %% Create OTF
 otf = paraxial_otf(n, lambda, numerical_aperture, pixel_size);
 
-% 0 for lines, 1 for points, 2 for circles of varying size, 3 for circles
-% of varying intensity
-sim_type=2;
-
 field = zeros(n);
     
+experiment_info='';
 if (sim_type==0)
     %% Create line pairs and add background levels
     field((n/4):(3*n/4), (n/2) - spacing_px) = 1;
@@ -63,10 +85,19 @@ if (sim_type==0)
 elseif (sim_type==1)
     numPairs=10;
     A=1;
+    
+    experiment_info=[experiment_info 'points '];
 
     for i=1:numPairs
         field((i*floor(n/numPairs))-floor(n/numPairs/2), (n/2) - i) = A;
         field((i*floor(n/numPairs))-floor(n/numPairs/2), (n/2) + i) = A;
+        distance = (2*i+1)*pixel_size;
+        if i==numPairs
+            experiment_info=[experiment_info num2str(distance) ' apart.  \n'];
+        else
+            experiment_info=[experiment_info num2str(distance) ', '];
+        end
+        
     end
 
     field = field + circshift(field, [0, round(n/3)]) + circshift(field, [0, -round(n/3)]);
@@ -79,7 +110,7 @@ elseif (sim_type==2)
     A=1;
     for i=1:numCircles
         yc=i*floor(n/numCircles)-floor(n/numCircles/2)-n/2;
-        field((xx.^2+(yy-yc).^2)<(i)^2)=A;   % radius 100, center at the origin
+        field((xx.^2+(yy-yc).^2)<(i)^2)=A;   % 
     end
     field = field + circshift(field, [0, round(n/3)]) + circshift(field, [0, -round(n/3)]);
 elseif (sim_type==3)
@@ -120,7 +151,7 @@ else
     field_rl = richardson_lucy(field_imaged, otf, num_iter, 1);
 end
 
-figure
+line_plot_fig=figure
 hold on
 for i=1:9
         yc=(i*floor(n/10))-floor(n/10/2)
@@ -133,10 +164,18 @@ for i=1:9
         plot(field_rl(yc, n/2-10-xshift:(n/2)+10-xshift), 'b');
 end
 
-legend('field', 'imaged', 'deconvolved');
+%legend('field', 'imaged', 'deconvolved');
+line_plot_fix.WindowState='maximuzed';
+saveas(line_plot_fig, [experiment_dir 'line_plots.png']);
+fprintf(fileID,'## Line Plots (medium noise)  \n');
+fprintf(fileID,experiment_info);
+fprintf(fileID,'red: ground truth  \n');
+fprintf(fileID,'green: imaged   \n');
+fprintf(fileID,'blue: restored   \n');
+
+fprintf(fileID,'![](line_plots.png)  \n');
 
 field_rl = field_rl ./ max(field_rl(:));
-
 ssimval_rl=ssim(field, field_rl);
 
 %% Calculate spectra
@@ -155,6 +194,11 @@ imshow(display_array, [])
 if SAVE_DISPLAY
    imwrite(display_array, 'rl_positivity_sim.png')
 end
+
+imwrite(display_array, [experiment_dir 'images.png'])
+fprintf(fileID,'## Images  \n');
+fprintf(fileID,'![](images.png)  \n');
+fclose(fileID);
 
 for i=1:6
     rf = 1/(10^(i-1))
