@@ -1,7 +1,7 @@
 ## Parameters  
-description: Restore points using 10000 iterations of RL  
-max photons 10000  
-num iter 1000  
+description: classic_rl_points_10000  
+max photons 1000  
+num iter 10000  
   pixel size 20  
   spacing px 4 nm  
   n 512  

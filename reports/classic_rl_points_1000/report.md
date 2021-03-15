@@ -1,5 +1,5 @@
 ## Parameters  
-description: Restore points using 1000 iterations of RL  
+description: classic_rl_points_1000  
 max photons 1000  
 num iter 1000  
   pixel size 20  
