@@ -1,5 +1,7 @@
 # James Manton's RL positivity demonstration with additional Wiener Filter comparison and SSIM measurement. 
 
+[see here](https://github.com/bnorthan/rl_positivity_sim/blob/master/docs/getstarted.md) for info about new options I have added.
+
 A simple simulation to show the effect of the positivity constraint in Richardson-Lucy deconvolution.
 Originally written in MATLAB, this code can be successfully run in [Octave](https://www.gnu.org/software/octave/) after installing and loading the [statistics package](https://octave.sourceforge.io/statistics/index.html) from [Octave Forge](https://octave.sourceforge.io/).
 Support for GPU acceleration is provided through the `USE_GPU` flag, but is overkill for the example ground truth provided by default.
